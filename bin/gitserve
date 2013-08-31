@@ -2,7 +2,7 @@
 
 // -- Load modules
 var http = require('http');
-var app = require('../lib/gitserve');
+var app = require('../lib/app');
 
 // -- Set port
 var port = app.get('port') || 3000;
