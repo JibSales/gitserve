@@ -2,12 +2,97 @@
 
 // -- Load modules
 var http = require('http');
-var app = require('../lib/app');
+var program = require('commander');
+var mon = require('mongroup');
+var pkg = require('../package');
+// var utils = require('../lib/utils');
 
-// -- Set port
-var port = app.get('port') || 3000;
+// -- Set up monitor
+var conf = { 
+  processes: { 
+    'gitserve': 'node ' + __dirname + '/../lib/server'
+  },
+  'on-error': './error.sh',
+  'on-restart': './restart.sh',
+  logs: '/tmp/logs',
+  pids: '/tmp/pids'
+}
 
-// -- Start HTTP server
-http.createServer(app).listen(port, function(){
-  console.log('gitserve listening on port %d', port);
-});
+function getNames(index) {
+  var names;
+  if (index) names = program.rawArgs.slice(program.rawArgs.indexOf(index));  
+  else names = [];
+  return names;
+}
+
+program
+  .version(require('../package.json').version)
+
+program
+  .command('start [names]')
+  .description('Start the gitserver')
+  .action(function (cmd, args) {
+    var server = new mon(conf);
+    server.on('Start', function (proc) {
+      console.log(s('\033[36m%15s\033[m : starting', proc.name));
+    });
+    server.start(getNames(cmd), function(err){
+      if (err) throw err;
+      console.log();
+    });
+  });
+
+program
+  .command('stop [names]')
+  .description('Stop the gitserver')
+  .action(function (cmd, args) {
+    var server = new mon(conf);
+    server.on('stopping', function(proc){
+      console.log('stopping...')
+    });
+
+    server.on('stop', function(proc){
+      console.log('done')
+    });
+
+    server.stop(getNames(cmd), 'SIGQUIT', function(err){
+      if (err) throw err;
+      console.log();
+    });
+  });
+
+program
+  .command('status')
+  .description('Get the status of the git server')
+  .action(function (cmd) {
+    console.log();
+    var server = new mon(conf);
+    server.procs.forEach(function(proc){
+      var state = proc.state();
+      console.log(state)
+      // switch (state) {
+      //   case 'stopped':
+      //     console.log(s('\033[33m%15s\033[m : %s', proc.name, state));
+      //     break;
+      //   case 'alive':
+      //     var uptime = ms(Date.now() - proc.mtime(), { long: true });
+      //     console.log(s('\033[32m%15s\033[m : %s : %s : %s', proc.name, proc.state(), proc.pid, uptime));
+      //     break;
+      //   case 'dead':
+      //     console.log(s('\033[31m%15s\033[m : %s', proc.name, proc.state(), proc.pid || 0));
+      //     break;
+      // }
+    });
+    console.log();
+  });
+
+program.parse(process.argv);
+
+// console.log(process.cwd());
+// console.log(__dirname);
+// console.log(program.args);
+
+// // -- Start HTTP server
+// http.createServer(app).listen(port, function(){
+//   console.log('gitserve listening on port %d', port);
+// });
