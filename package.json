@@ -1,7 +1,7 @@
 {
   "name": "gitserve",
   "description": "An HTTP git server with security layer",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "private": true,
   "bin": "bin/gitserve",
   "main": "lib/gitserve",
