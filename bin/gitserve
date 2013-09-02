@@ -2,97 +2,62 @@
 
 // -- Load modules
 var http = require('http');
-var program = require('commander');
-var mon = require('mongroup');
+var fs = require('fs');
+var optimist = require('optimist');
+var colors = require('colors');
+var gitserve = require('../lib/gitserve');
+var utils = require('../lib/utils');
 var pkg = require('../package');
-// var utils = require('../lib/utils');
 
-// -- Set up monitor
-var conf = { 
-  processes: { 
-    'gitserve': 'node ' + __dirname + '/../lib/server'
-  },
-  'on-error': './error.sh',
-  'on-restart': './restart.sh',
-  logs: '/tmp/logs',
-  pids: '/tmp/pids'
+// -- Define argv properties
+var argv = optimist
+  .usage(utils.usage.join('\n'))
+  .options('p', {
+    alias: 'port',
+    describe: 'Port to start the server on.'.grey,
+    default: '3000'
+  })
+  .options('c', {
+    alias: 'config',
+    describe: 'Path to the config file.'.grey,
+    default: './config.json'
+  })
+  .options('r', {
+    alias: 'repos',
+    describe: 'Directory where the repos to serve are located.'.grey,
+    default: './'
+  })
+  .options('i', {
+    alias: 'interval',
+    describe: 'Interval (seconds) in which config file is reloaded.'.grey,
+    default: 30
+  })
+  .options('h', {
+    alias: 'help',
+    describe: 'You\'re looking at it.'.grey
+  })
+  .options('v', {
+    alias: 'version',
+    describe: 'Print the version number.'.grey
+  })
+  .argv
+
+// -- Print version number
+if (argv.v) {
+  console.log(pkg.name + ' v' + pkg.version);
+  process.exit(0);
 }
 
-function getNames(index) {
-  var names;
-  if (index) names = program.rawArgs.slice(program.rawArgs.indexOf(index));  
-  else names = [];
-  return names;
+// -- Show help screen
+if (argv.help || argv._.length === 0) {
+  optimist.showHelp();
+  process.exit(0);
 }
 
-program
-  .version(require('../package.json').version)
-
-program
-  .command('start [names]')
-  .description('Start the gitserver')
-  .action(function (cmd, args) {
-    var server = new mon(conf);
-    server.on('Start', function (proc) {
-      console.log(s('\033[36m%15s\033[m : starting', proc.name));
-    });
-    server.start(getNames(cmd), function(err){
-      if (err) throw err;
-      console.log();
-    });
+// -- Start simple HTTP server
+if ('start' === argv._[0]) {
+  var server = gitserve(argv);
+  http.createServer(server).listen(argv.port, function () {
+    utils.printBootscreen(argv);
   });
-
-program
-  .command('stop [names]')
-  .description('Stop the gitserver')
-  .action(function (cmd, args) {
-    var server = new mon(conf);
-    server.on('stopping', function(proc){
-      console.log('stopping...')
-    });
-
-    server.on('stop', function(proc){
-      console.log('done')
-    });
-
-    server.stop(getNames(cmd), 'SIGQUIT', function(err){
-      if (err) throw err;
-      console.log();
-    });
-  });
-
-program
-  .command('status')
-  .description('Get the status of the git server')
-  .action(function (cmd) {
-    console.log();
-    var server = new mon(conf);
-    server.procs.forEach(function(proc){
-      var state = proc.state();
-      console.log(state)
-      // switch (state) {
-      //   case 'stopped':
-      //     console.log(s('\033[33m%15s\033[m : %s', proc.name, state));
-      //     break;
-      //   case 'alive':
-      //     var uptime = ms(Date.now() - proc.mtime(), { long: true });
-      //     console.log(s('\033[32m%15s\033[m : %s : %s : %s', proc.name, proc.state(), proc.pid, uptime));
-      //     break;
-      //   case 'dead':
-      //     console.log(s('\033[31m%15s\033[m : %s', proc.name, proc.state(), proc.pid || 0));
-      //     break;
-      // }
-    });
-    console.log();
-  });
-
-program.parse(process.argv);
-
-// console.log(process.cwd());
-// console.log(__dirname);
-// console.log(program.args);
-
-// // -- Start HTTP server
-// http.createServer(app).listen(port, function(){
-//   console.log('gitserve listening on port %d', port);
-// });
+}
