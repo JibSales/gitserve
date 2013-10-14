@@ -2,7 +2,6 @@
 
 // -- Load modules
 var http = require('http');
-var fs = require('fs');
 var optimist = require('optimist');
 var colors = require('colors');
 var gitserve = require('../lib/gitserve');
