@@ -4,7 +4,7 @@
 var http = require('http')
   , optimist = require('optimist')
   , colors = require('colors')
-  , gitserve = require('../lib/gitserve')
+  , server = require('../lib/server')
   , utils = require('../lib/utils')
   , pkg = require('../package');
 
@@ -45,7 +45,7 @@ if (argv.help || argv._.length === 0) {
 
 // -- Start simple HTTP server
 if ('start' === argv._[0]) {
-  http.createServer(gitserve(argv)).listen(argv.port, function () {
+  http.createServer(server(argv)).listen(argv.port, function () {
     utils.printBootscreen(argv);
   });
 }
