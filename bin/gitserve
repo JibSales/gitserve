@@ -1,12 +1,12 @@
 #! /usr/bin/env node
 
 // -- Load modules
-var http = require('http');
-var optimist = require('optimist');
-var colors = require('colors');
-var gitserve = require('../lib/gitserve');
-var utils = require('../lib/utils');
-var pkg = require('../package');
+var http = require('http')
+  , optimist = require('optimist')
+  , colors = require('colors')
+  , gitserve = require('../lib/gitserve')
+  , utils = require('../lib/utils')
+  , pkg = require('../package');
 
 // -- Define argv properties
 var argv = optimist
@@ -16,20 +16,10 @@ var argv = optimist
     describe: 'Port to start the server on.'.grey,
     default: '3000'
   })
-  .options('c', {
-    alias: 'config',
-    describe: 'Path to the config file.'.grey,
-    default: './config.json'
-  })
   .options('r', {
     alias: 'repos',
     describe: 'Directory where the repos to serve are located.'.grey,
     default: './'
-  })
-  .options('i', {
-    alias: 'interval',
-    describe: 'Interval (seconds) in which config file is reloaded.'.grey,
-    default: 30
   })
   .options('h', {
     alias: 'help',
@@ -55,8 +45,7 @@ if (argv.help || argv._.length === 0) {
 
 // -- Start simple HTTP server
 if ('start' === argv._[0]) {
-  var server = gitserve(argv);
-  http.createServer(server).listen(argv.port, function () {
+  http.createServer(gitserve(argv)).listen(argv.port, function () {
     utils.printBootscreen(argv);
   });
 }
