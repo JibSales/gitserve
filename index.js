@@ -1,6 +1,5 @@
 var spawn = require('child_process').spawn
   , url = require('url')
-  , qs = require('querystring')
   , path = require('path')
   , fs = require('fs');
 
@@ -34,25 +33,17 @@ module.exports = function (options) {
   
   }
 
-  function notFound (req, res) {
-    if (req.app) return next();
-    else {
-      res.statusCode = 404;
-      return res.end();
-    }
-  }
-
   return function (req, res, next) {
 
-    // -- Filter out anything that is not a part of the router
-    if (!router[req.method].test(req.url)) return notFound(req, res);
+    // -- Filter out anything that is not a valid method or route
+    if ('GET' !== req.method && 'POST' !== req.method) return next();
+    if (!router[req.method].test(req.url)) return next();
     
     // -- Request setup
     req.path = url.parse(req.url);
-    req.query = qs.parse(req.path.query);
-    req.params = req.url.match(router[req.method]);
-    req.repo = path.join(options.repos, req.params[1]);
-    req.service = req.query.service || 'git-' + req.params[2] + '-pack';
+    var match = req.url.match(router[req.method]);
+    req.repo = path.join(options.repos, match[1]);
+    req.service = 'git-' + match[2] + '-pack';
 
     // -- Set headers
     res.setHeader('Expires', 'Fri, 01 Jan 1980 00:00:00 GMT');
