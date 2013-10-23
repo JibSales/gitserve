@@ -6,13 +6,16 @@ var spawn = require('child_process').spawn
 
 
 module.exports = function (options) {
-  var routeRegExp = /\/(.+)\/(info\/refs|git-(receive|upload)-pack)/;
+  var router = {
+    "GET" : /\/(.+)\/info\/refs\?service\=git-(receive|upload)-pack/,
+    "POST" : /\/(.+)\/git-(receive|upload)-pack/
+  }
   
   options = options || {};
   if (!options.repos) throw new Error('You must include a valid directory as the "repos" option.');
   if (!fs.existsSync(options.repos)) throw new Error('Repos directory doesn\'t exist.');
 
-  // -- Taken from http://github.com/substack/pushover
+  // -- Taken from https://github.com/substack/pushover
   function pack (s) {
     var n = (4 + s.length).toString(16);
     return Array(4 - n.length + 1).join('0') + n + s;
@@ -27,34 +30,37 @@ module.exports = function (options) {
     args.push(req.repo);
     
     // -- Spawn the service and end the response on exit
-    var service = spawn('/usr/bin/' + req.service, args);
-    service.on('exit', function () {
-      res.end();
-    });
+    return spawn('/usr/bin/' + req.service, args);
+  
+  }
 
-    return service;
+  function notFound (req, res) {
+    if (req.app) return next();
+    else {
+      res.statusCode = 404;
+      return res.end();
+    }
   }
 
   return function (req, res, next) {
 
-    // -- Pass on none git requests
-    if ('GET' !== req.method && 'POST' !== req.method) return next();
-    if (!routeRegExp.test(req.url)) return next();
+    // -- Filter out anything that is not a part of the router
+    if (!router[req.method].test(req.url)) return notFound(req, res);
     
     // -- Request setup
     req.path = url.parse(req.url);
     req.query = qs.parse(req.path.query);
-    req.params = req.url.match(routeRegExp);
+    req.params = req.url.match(router[req.method]);
     req.repo = path.join(options.repos, req.params[1]);
-    req.service = req.query.service || req.params[2];
-    
+    req.service = req.query.service || 'git-' + req.params[2] + '-pack';
+
     // -- Set headers
     res.setHeader('Expires', 'Fri, 01 Jan 1980 00:00:00 GMT');
     res.setHeader('Pragma', 'no-cache');
     res.setHeader('Cache-Control', 'no-cache, max-age=0, must-revalidate');
     res.setHeader('Content-Type', 'application/x-' + req.service + '-advertisement');
 
-    // -- Respond to GET /:user/:project/info/refs
+    // -- Setup body of response to GET /:namespace/info/refs
     if ('GET' === req.method) {
       res.write(pack('# service=' + req.service + '\n'));
       res.write('0000');
@@ -64,6 +70,9 @@ module.exports = function (options) {
     var git = spawnGitService(req, res);
     req.pipe(git.stdin);
     git.stdout.pipe(res);
+    git.on('exit', function () {
+      res.end();
+    });
 
   }
 }
