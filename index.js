@@ -1,12 +1,17 @@
 var spawn = require('child_process').spawn
   , url = require('url')
   , qs = require('querystring')
-  , path = require('path');
+  , path = require('path')
+  , fs = require('fs');
 
 
 module.exports = function (options) {
   var routeRegExp = /\/(.+)\/(info\/refs|git-(receive|upload)-pack)/;
   
+  options = options || {};
+  if (!options.repos) throw new Error('You must include a valid directory as the "repos" option.');
+  if (!fs.existsSync(options.repos)) throw new Error('Repos directory doesn\'t exist.');
+
   // -- Taken from http://github.com/substack/pushover
   function pack (s) {
     var n = (4 + s.length).toString(16);
@@ -19,7 +24,7 @@ module.exports = function (options) {
     var args = [];
     args.push('--stateless-rpc');
     if ('GET' === req.method) args.push('--advertise-refs');
-    args.push(path.join(options.repos, req.project));
+    args.push(req.repo);
     
     // -- Spawn the service and end the response on exit
     var service = spawn('/usr/bin/' + req.service, args);
@@ -40,7 +45,7 @@ module.exports = function (options) {
     req.path = url.parse(req.url);
     req.query = qs.parse(req.path.query);
     req.params = req.url.match(routeRegExp);
-    req.project = req.params[1];
+    req.repo = path.join(options.repos, req.params[1]);
     req.service = req.query.service || req.params[2];
     
     // -- Set headers

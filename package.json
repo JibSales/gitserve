@@ -1,13 +1,11 @@
 {
   "name": "gitserve",
-  "description": "An HTTP git server with security layer",
-  "version": "0.1.1",
-  "private": true,
-  "bin": "bin/gitserve",
-  "main": "lib/gitserve",
-  "dependencies": {
-    "optimist": "~0.6.0",
-    "colors": "~0.6.2",
-    "connect": "~2.9.2"
+  "description": "Middleware for git fetch, clone, push and pull",
+  "version": "0.2.0",
+  "main": "index",
+  "devDependencies": {
+    "mocha": "~1.13.0",
+    "supertest": "~0.8.0",
+    "should": "~2.0.2"
   }
 }

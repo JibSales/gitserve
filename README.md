@@ -1,66 +1,49 @@
-#Git HTTP Server for Node.js
-For now, this module remains as a manifest-file based authentication wrapper around Substack's `pushover`. However, the intended future of this module is a framework of Connect/Express compatible middleware for creating a full featured custom git server over any protocol.
-
-###Note:
-While `pushover` is a strong module on its own, I found it to be rather inflexible when trying to extend its feature set in a modern Connect/Express middleware stack:
-
-* It demands to be the last middleware in the stack as it does not use the `next()` method. 
-* It produces its own unstyled HTTP errors.
-* It assumes/creates a directory structure based off the URL leaving 
-
-When considering the "many tiny services that do one thing well" philosophy of the developer, I understand why the `pushover` module was designed as a barebones service. However, I need a git service that is a little more Connect/Express friendly.
-
+#Gitserve
+A nodejs port of `git http-backend` for serving git repos with the Smart HTTP/HTTPS Protocol. Can be used as a stand alone HTTP handler or as a Connect/Express middleware. Responds to fetch, clone, push and pull.
 
 ##Getting Started
-### Installation
-To install the `gitserve` global binary use npm:
+`gitserve` takes an options hash and exposes a Connect/Express compatible middleware or HTTP handler. The only required option is the directory in which the bare repositories are located.
 
+#####Install
 ```
-$ npm install gitserve -g
-```
-### Usage
-```
-$ gitserve start --repos [path to repos] --config [path to config]
-  
-gitserve listening on port 3000
-    --config ./config.json
-    --repos  ./
-
-```
-then
-
-```
-$ git push http://localhost:3000/<user>/<repo> master
-Counting objects: 29, done.
-Delta compression using up to 4 threads.
-Compressing objects: 100% (24/24), done.
-Writing objects: 100% (29/29), 5.05 KiB, done.
-Total 29 (delta 5), reused 0 (delta 0)
-To http://localhost:3000/JibSales/gitserve
- * [new branch]      master -> master
-
+$ npm install gitserve
 ```
 
-### Options
-
+#####Connect/Express Middleware
 ```
-Usage:            gitserve [options]
+var connect = require('connect')
+  , gitserve = require('gitserve');
 
-Commands:
-  start           Starts the gitserve server
-
-Options:
-  -p, --port      Port to start the server on.                          [default: "3000"]
-  -c, --config    Path to the config file.                              [default: "./config.json"]
-  -r, --repos     Directory where the repos to serve are located.       [default: "./"]
-  -i, --interval  Interval (seconds) in which config file is reloaded.  [default: 30]
-  -h, --help      You're looking at it.                               
-  -v, --version   Print the version number.       
+var app = connect()
+  .use(gitserve({ repos: '/path/to/repos' }));
+app.listen(3000);
 ```
 
-##TODO
-This is still very much a work in progress, but it serves my needs for now. While `pushover` is a strong module on its own, it's pretty inflexible when added to a modern Connect/Express middleware stack.   the  Desired features include:
+#####HTTP Handler
+```
+var http = require('http')
+  , gitserve = require('gitserve');
 
-*  Remove `pushover` dependency and port to truely compatible Connect/Express middleware.
-*  Attach an optional public API for remote CRUD methods on the `config.json` file.
-*  Introduce database transport layer prefably with an agnostic library like NodeJitsu's [resourceful](http://github.com/flatiron/resourceful).
+var handler = gitserve({ repos: '/path/to/repos'});
+http.createServer(handler).listen(3000);
+```
+
+#####Repo namespacing
+`gitserve` allows for a leading wildcard path to namespace your repos. For instance, to mimic Github's `user/project` namespacing you would add a remote
+
+```
+$ git remote add origin http://localhost:3000/JibSales/myAwesomeProject
+```
+and `gitserve` will look in `/path/to/repos/JibSales/myAwesomeProject` for a valid git repository. The namespacing can go as deep as your heart desires. If the repository doesn't exist, the middleware calls next or the handler returns a 404. 
+
+##But what about feature x, y or z?
+`gitserve` is meant to be super light weight, unopinionated and only respond to requests that match the git Smart HTTP Protocol. Authentication, autocreation, hooks -- these all require strong opinions and depend on the business logic of the application layer.
+
+####To Do List:
+  * Tests
+
+####Special Thanks
+Big ups to James Halliday aka, substack as his `pushover` module was intergal to understanding how to write `info/refs` responses. .
+
+####LICENSE
+MIT
