@@ -34,7 +34,7 @@ http.createServer(handler).listen(3000);
 ```
 $ git remote add origin http://localhost:3000/JibSales/myAwesomeProject
 ```
-and `gitserve` will look in `/path/to/repos/JibSales/myAwesomeProject` for a valid git repository. The namespacing can go as deep as your heart desires. If the repository doesn't exist, the middleware calls next or the handler returns a 404. 
+and `gitserve` will look in `/path/to/repos/JibSales/myAwesomeProject` for a valid git repository. The namespacing can go as deep as your heart desires.
 
 ##But what about feature x, y or z?
 `gitserve` is meant to be super light weight, unopinionated and only respond to requests that match the git Smart HTTP Protocol. Authentication, autocreation, hooks -- these all require strong opinions and depend on the business logic of the application layer.
@@ -43,7 +43,7 @@ and `gitserve` will look in `/path/to/repos/JibSales/myAwesomeProject` for a val
   * Tests
 
 ####Special Thanks
-Big ups to James Halliday aka, substack as his `pushover` module was intergal to understanding how to write `info/refs` responses. .
+Big ups to James Halliday aka, substack as his `pushover` module was intergal to understanding how to write `info/refs` responses.
 
 ####LICENSE
 MIT
