@@ -5,12 +5,9 @@
   "private": true,
   "bin": "bin/gitserve",
   "main": "lib/gitserve",
-  "scripts": {
-    "start": "node lib/server"
-  },
   "dependencies": {
-    "pushover": "~1.3.3",
     "optimist": "~0.6.0",
-    "colors": "~0.6.2"
+    "colors": "~0.6.2",
+    "connect": "~2.9.2"
   }
 }

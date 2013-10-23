@@ -4,7 +4,8 @@
 var http = require('http')
   , optimist = require('optimist')
   , colors = require('colors')
-  , express = require('express')
+  , connect = require('connect')
+  , gitserve = require('../lib/gitserve')
   , utils = require('../lib/utils')
   , pkg = require('../package');
 
@@ -45,18 +46,7 @@ if (argv.help || argv._.length === 0) {
 
 // -- Start simple HTTP server
 if ('start' === argv._[0]) {
-  var app = express();
-  
-  if ("development" === app.get('env')) {
-    app.use(express.logger('dev'));  
-  }
-
-  app.set('repos', argv.repos)
-
-  app.use(require('../lib/gitserve').middleware);
-  app.use(app.router);
-  app.use(express.static(__dirname + '/../public'));
-
+  var app = gitserve({ repos: argv.repos });
   http.createServer(app).listen(argv.port, function () {
     utils.printBootscreen(argv);
   });
