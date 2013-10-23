@@ -1,8 +1,13 @@
 {
   "name": "gitserve",
   "description": "Middleware for git fetch, clone, push and pull",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "main": "index",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/JibSales/gitserve"
+  },
+  "keywords": [ "git", "middleware"],
   "devDependencies": {
     "mocha": "~1.13.0",
     "supertest": "~0.8.0",
