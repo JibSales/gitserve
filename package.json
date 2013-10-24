@@ -1,16 +1,21 @@
 {
   "name": "gitserve",
-  "description": "Middleware for git fetch, clone, push and pull",
+  "description": "Connect/Express middleware port of git-http-backend",
   "version": "0.2.1",
   "main": "index",
   "repository": {
     "type": "git",
     "url": "https://github.com/JibSales/gitserve"
   },
-  "keywords": [ "git", "middleware"],
+  "keywords": [
+    "git",
+    "middleware"
+  ],
   "devDependencies": {
     "mocha": "~1.13.0",
-    "supertest": "~0.8.0",
-    "should": "~2.0.2"
+    "should": "~2.0.2",
+    "mkdirp": "~0.3.5",
+    "connect": "~2.10.1",
+    "rimraf": "~2.2.2"
   }
 }

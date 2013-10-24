@@ -29,9 +29,6 @@ $ git remote add origin http://localhost:3000/JibSales/myAwesomeProject
 ```
 and `gitserve` will look in `/path/to/repos/JibSales/myAwesomeProject` for a valid git repository. The namespacing can go as deep as your heart desires.
 
-##To Do List:
-  * Tests
-
 ##License
 MIT
 
