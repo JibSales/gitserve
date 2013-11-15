@@ -1,7 +1,7 @@
 {
   "name": "gitserve",
   "description": "Connect/Express middleware port of git-http-backend",
-  "version": "0.2.1",
+  "version": "0.2.3",
   "main": "index",
   "repository": {
     "type": "git",

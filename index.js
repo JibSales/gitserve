@@ -1,7 +1,8 @@
-var spawn = require('child_process').spawn
-  , url = require('url')
-  , path = require('path')
-  , fs = require('fs');
+// -- Load Modules
+var spawn = require('child_process').spawn;
+var url = require('url');
+var path = require('path');
+var fs = require('fs');
 
 
 module.exports = function (options) {
@@ -15,11 +16,18 @@ module.exports = function (options) {
   if (!fs.existsSync(options.repos)) throw new Error('Repos directory doesn\'t exist.');
 
   function setupGitService (req) {
+
+    // -- Get the route and service
     var match = req.url.match(router[req.method]);
-    return {
+    
+    // -- Create object
+    var git = {
       repo: path.join(options.repos, match[1]),
       service: 'git-' + match[2] + '-pack'
     }
+
+    // -- Return git object
+    return git;
   }
 
   // -- Taken from https://github.com/substack/pushover
@@ -63,10 +71,14 @@ module.exports = function (options) {
     }
 
     // -- Spawn git service
-    var git = spawnGitService(req);
-    req.pipe(git.stdin);
-    git.stdout.pipe(res);
-    git.on('exit', function () {
+    var service = spawnGitService(req);
+    req.pipe(service.stdin);
+    service.stdout.pipe(res);
+    service.on('error', function (data) {
+      res.statusCode(500);
+      res.write('Internal Server Error');
+    });
+    service.on('exit', function () {
       res.end();
     });
 
